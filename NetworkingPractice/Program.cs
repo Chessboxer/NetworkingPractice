@@ -6,7 +6,7 @@ namespace NetworkingPractice
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Downloader.Run();
         }
     }
 }
