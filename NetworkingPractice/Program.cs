@@ -6,7 +6,7 @@ namespace NetworkingPractice
     {
         static void Main(string[] args)
         {
-            HttpServer.Run();
+            TcpEcho.Run();
         }
     }
 }
