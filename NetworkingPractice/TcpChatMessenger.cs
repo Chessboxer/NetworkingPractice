@@ -56,7 +56,7 @@ namespace NetworkingPractice
                 _msgStream.Write(msgBuffer, 0, msgBuffer.Length); // Blocks
 
                 // If we're still connceted after sending our name, that means the server accepts us
-                if (!isDisconnected(_client))
+                if (!_isDisconnected(_client))
                     Running = true;
                 else
                 {
@@ -75,16 +75,87 @@ namespace NetworkingPractice
 
         public void SendMessages()
         {
+            bool wasRunning = Running;
 
+            while (Running)
+            {
+                // Poll user for input
+                Console.Write($"{Name}>");
+                string msg = Console.ReadLine();
+
+                //Qut or send a message 
+                if ((msg.ToLower() == "quit") || (msg.ToLower() == "exit"))
+                {
+                    // User wants to quit
+                    Console.WriteLine("Diconnectiong...");
+                    Running = false;
+                }
+                else if (msg != string.Empty)
+                {
+                    // Send the message
+                    byte[] msgBuffer = Encoding.UTF8.GetBytes(msg);
+                    _msgStream.Write(msgBuffer, 0, msgBuffer.Length);
+                }
+
+                // use less CPU
+                Thread.Sleep(10);
+
+                // Check if the server didnt disconnect us
+                if (_isDisconnected(_client))
+                {
+                    Running = false;
+                    Console.WriteLine("Server has disconnected from us \n:[");
+                }
+            }
+
+            _cleanupNetworkResources();
+            if (wasRunning)
+                Console.WriteLine("Disconnected");
         }
+
+        // Cleans any leftowver network resources
         private void _cleanupNetworkResources()
         {
-            throw new NotImplementedException();
+            _msgStream?.Close();
+            _msgStream = null;
+            _client.Close();
         }
 
-        private bool isDisconnected(TcpClient client)
+        //Checks if socket is disconnected
+        // Adapted from...
+        private bool _isDisconnected(TcpClient client)
         {
-            throw new NotImplementedException();
+            try
+            {
+                Socket s = client.Client;
+                return s.Poll(10*1000, SelectMode.SelectRead) && (s.Available == 0)
+            }
+            catch(SocketException se)
+            {
+                // We got a socket error, assume its disconnected
+                return true;
+            }
+
         }
+
+
+
+
+        public static void StartMessenger(string args)
+        {
+            // Get a name
+            Console.Write("Enter a name to use: ");
+            string name = Console.ReadLine();
+
+            // Setup the Messenger
+            string host = "localhost"; //args[0].Trim()"
+            int port = 6000; // int.Parse(args[1].Trim());
+            TcpChatMessenger messenger = new TcpChatMessenger(host, port, name);
+
+            // connect and send messages
+            messenger.Connect();
+            messenger.SendMessages();
+        }
+     
     }
 }
