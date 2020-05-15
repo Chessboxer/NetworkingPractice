@@ -68,7 +68,7 @@ namespace NetworkingPractice
             else
             {
                 _cleanupNetworkResources();
-                Console.WriteLine($"Wasn't able to connect to the server at {EndPoint}");
+                Console.WriteLine($"Wasn't able to connect to the server at {endPoint}");
             }
         }
 
@@ -128,7 +128,7 @@ namespace NetworkingPractice
             try
             {
                 Socket s = client.Client;
-                return s.Poll(10*1000, SelectMode.SelectRead) && (s.Available == 0)
+                return s.Poll(10 * 1000, SelectMode.SelectRead) && (s.Available == 0);
             }
             catch(SocketException se)
             {
